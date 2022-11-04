@@ -16,6 +16,9 @@ import org.apache.kafka.connect.connector.Task;
 import org.apache.kafka.connect.errors.ConnectException;
 import org.apache.kafka.connect.source.SourceConnector;
 import org.apache.kafka.connect.util.ConnectorUtils;
+import java.lang.management.ManagementFactory;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import static com.acme.kafka.connect.sample.SampleSourceConnectorConfig.*;
 
@@ -69,6 +72,16 @@ public class SampleSourceConnector extends SourceConnector {
 
     @Override
     public void start(Map<String, String> originalProps) {
+
+        try {
+            ObjectName mbeanName = new ObjectName("com.acme.kafka.connect.sample:type=Sample");
+            Sample mbean = new Sample();
+            MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+            mbs.registerMBean(mbean, mbeanName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Got exception while registering mbean");
+        }
         this.originalProps = originalProps;
         config = new SampleSourceConnectorConfig(originalProps);
         String firstParam = config.getString(FIRST_NONREQUIRED_PARAM_CONFIG);
